@@ -15,6 +15,7 @@ import (
 
 	"net/http"
 
+	"github.com/JayneJacobs/go_systems/proconasyncq"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -124,8 +125,10 @@ Loop:
 		case "get-fs-path":
 			if strings.HasPrefix(in.Data, "/var/www/VFS/") {
 				tobj := profilesystem.NewGetFileSystemTask(in.Data, c)
-				proasyncq.TaskQue <-tobj
+				proconasyncq.TaskQueue <- tobj
+				break
 			}
+			
 		default:
 			fmt.Println("Default case: No switch statemens in gws true")
 			break
