@@ -1,4 +1,4 @@
-package proconasyncq
+package proconasync
 
 import "log"
 

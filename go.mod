@@ -1,8 +1,9 @@
-module github.com/JayneJacobs/go_systems
+module go_systems
 
 go 1.12
 
 require (
+	github.com/JayneJacobs/go_systems v0.0.0-20200404141248-cff9b92b3d65
 	github.com/creack/pty v1.1.9
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/uuid v1.1.1
