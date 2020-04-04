@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go_systems/pr0config"
 	"go_systems/pr0conpty"
-	"go_systems/proconasync"
 	"go_systems/procondata"
 	"go_systems/proconjwt"
 	"go_systems/proconmongo"
@@ -15,6 +14,8 @@ import (
 	"strings"
 
 	"net/http"
+
+	"go_systems/proconasyncq"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -125,7 +126,7 @@ Loop:
 		case "get-fs-path":
 			if strings.HasPrefix(in.Data, "/var/www/VFS/") {
 				tobj := profilesystem.NewGetFileSystemTask(in.Data, c)
-				proconasync.TaskQueue <- tobj
+				proconasyncq.TaskQueue <- tobj
 				break
 			}
 			
