@@ -13,10 +13,10 @@ import (
 // FileInfo is a struct for the File Metadata
 type FileInfo struct {
 	Name string 		`json:"name"`
-	Size int64 		    `json:"size"`
+	Size int64			`json:"size"`
 	Mode os.FileMode	`json:"mode"`
-	ModTime time.Time 	`json:"mod_time"`
-	IsDir bool 			`json:"is_dir"`
+	ModTime time.Time	`json:"mod_time"`
+	IsDir bool			`json:"is_dir"`
 }
 
 func fileInfoFromInterface(v os.FileInfo) *FileInfo {
