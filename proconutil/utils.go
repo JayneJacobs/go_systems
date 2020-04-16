@@ -26,6 +26,7 @@ func B64DecodeTryUser(test_user_json_str string) ([]byte, []byte, error) {
 
 // GenerateUserPassword takes pwdstr string ane returns 64bit encoded string
 func GenerateUserPassword(pwdstr string) string {
+	fmt.Println("IN GenerateUser", pwdstr)
 	hp, err := bcrypt.GenerateFromPassword([]byte(pwdstr), 0)
 	if err != nil {
 		fmt.Printf("Generate BCrypt Error: %s", err)

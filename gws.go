@@ -11,7 +11,9 @@ import (
 	"go_systems/proconmongo"
 	"go_systems/proconutil"
 	"go_systems/profilesystem"
+	"io/ioutil"
 	"strings"
+	"time"
 
 	"net/http"
 
@@ -25,10 +27,20 @@ import (
 var addr = flag.String("addr", "0.0.0.0:1200", "http service address")
 var upgrader = websocket.Upgrader{} // default options 
 
+// WsClients struct has teh CC and CCIDS mpa
+type WsClients struct{
+	CC int
+	CIDS []string
+}
+
+// Table is used to feed WSClinetSTruct
+var Table chan *WsClients;
+
 func handleAPI(w http.ResponseWriter, r *http.Request) {
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	
+	// w.Header().Set("Access-Control-Allow-Origin", "*")
+    // w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("WTF @HandleAPI Ws Upgrader Error in handlAPI ", err)
@@ -38,14 +50,38 @@ func handleAPI(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Println("WTF is up here in handleAPI", err)
+		return
 	}
 
 	c.UUID = "ws-" + id.String()
 	fmt.Println("going into loop")
+	go func() {
+		//take control of WsClients pointer from channel
+		wscc := <- Table
+		wscc.CC++
+		wscc.CIDS = append(wscc.CIDS, c.UUID)
+		
+		fmt.Println(wscc);
+		
+		Table <- wscc
+	}()
+		
+	
+	go func(Table chan *WsClients, c *websocket.Conn) {
+		for range time.Tick(time.Second * 5) {
+			wscc := <- Table
+			mcl, err := json.Marshal(wscc)
+			if err != nil { fmt.Println(err) } 
+			
+				procondata.SendMsg("^vAr^", "websocket-client-list", string(mcl), c);
+			
+			Table <- wscc					
+		}	
+	}(Table, c)
 
 Loop:
 	for {
-		fmt.Println("in gws loop")
+		fmt.Println("/n in gws loop")
 		in := procondata.Msg{}
 		fmt.Println(&in)
 		err := c.ReadJSON(&in)
@@ -54,13 +90,13 @@ Loop:
 			c.Close()
 			break Loop
 		}
-		
 		fmt.Println("This is the in.Type", in.Type)
 		
 		switch in.Type {
 		case "register-client-message":
 			fmt.Println("message received: register-client-message")
 			procondata.SendMsg("^vAr^", "server-ws-connect-success-msg", c.UUID, c)
+			break
 		case "test-jwt-message":
 			valid, err := proconjwt.ValidateJWT(pr0config.PubKeyFile, in.Jwt)
 			if err != nil {
@@ -73,6 +109,7 @@ Loop:
 		case "create-user":
 			res := proconmongo.CreateUser(in.Data, c)
 			fmt.Println("Mongo Function Result/Error for create-user: ", res)
+			break
 		case "user-created-successfully":
 			fmt.Println("User Created Successfully: ")
 		case "login-user":
@@ -123,19 +160,30 @@ Loop:
 					procondata.SendMsg("^vAr^", "server-ws-connect-stored-jwt-verified", "noop", c)
 				}
 			}
+			break
 		case "get-fs-path":
+			fmt.Printf("This is the input %s", in.Data)
 			if strings.HasPrefix(in.Data, "/var/www/VFS/") {
 				tobj := profilesystem.NewGetFileSystemTask(in.Data, c)
 				proconasyncq.TaskQueue <- tobj
-				break
 			}
-			
+			break
+		case "return-fs-path-data":
+			data, err := ioutil.ReadFile(in.Data)
+				if err != nil {
+					fmt.Println(err, "in fs-path-data gws")
+				}
+				procondata.SendMsg("vAr", "rtn-file-data", string(data), c)
+				break
+		case "get-mysql-databbases":
+			fmt.Println("in mysql switchcase in gws")
 		default:
 			fmt.Println("Default case: No switch statemens in gws true")
 			break
 		}
 	}
 }
+
 
 func handleUI(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -145,25 +193,30 @@ func handleUI(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println(component)
-
+	fmt.Println("Connected ui")
 	proconmongo.MongoGetUIComponent(component, w)	
 }
 
 func main() {
 	fmt.Println("This is from the Go Main Fumction")
 	flag.Parse()
-
+	proconasyncq.StartTaskDispatcher(9)
 	// look into subrouter
 	r := mux.NewRouter()
 
 	
-	
-	//Rest API
-	r.HandleFunc("/rest/api/ui/{component}", handleUI)
-
 	//Websocket API
 	r.HandleFunc("/ws", handleAPI)
 	r.HandleFunc("/ws", pr0conpty.HandlePty)
+	fmt.Printf("Starting WS")
+
+	go func() {
+		Table = make(chan *WsClients);
+		Table <- new(WsClients)		
+	}()
+
+	//Rest API
+	r.HandleFunc("/rest/api/ui/{component}", handleUI)
 
 	http.ListenAndServeTLS(*addr, "/etc/letsencrypt/live/pr0con.selfmanagedmusician.com/cert.pem", "/etc/letsencrypt/live/pr0con.selfmanagedmusician.com/privkey.pem", r)
 

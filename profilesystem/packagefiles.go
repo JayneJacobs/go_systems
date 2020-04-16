@@ -1,6 +1,7 @@
 package profilesystem
 
 import (
+	_ "encoding/json" //needed for FileInfo
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 // FileInfo is a struct for the File Metadata
 type FileInfo struct {
 	Name string 		`json:"name"`
-	Size int64 		`json:"size"`
+	Size int64 		    `json:"size"`
 	Mode os.FileMode	`json:"mode"`
 	ModTime time.Time 	`json:"mod_time"`
 	IsDir bool 			`json:"is_dir"`
@@ -41,7 +42,7 @@ type Node struct {
 func NewTree(root string) (result *Node, err error) {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
-		return nil, err
+		return 
 	}
 	parents := make(map[string]*Node)
 	
@@ -70,7 +71,8 @@ func NewTree(root string) (result *Node, err error) {
 		node.Parent = parent
 		parent.Children = append(parent.Children, node)
 	}
-return 
+	fmt.Println(result, err)
+   return
 }
 
 // GetFileSystemTask struct

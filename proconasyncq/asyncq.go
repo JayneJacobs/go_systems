@@ -19,7 +19,6 @@ type TaskWorker struct {
 	ID int
 	TaskChannel chan Task
 	TaskWorkerQueue chan chan Task
-
 }
 
 // NewTaskWorker takes and id int and taskWorkerQue  and returns a TaskWorker
@@ -50,11 +49,10 @@ func StartTaskDispatcher(taskWorkerSize int)  {
 
 	TaskWorkerQueue = make(chan chan Task, taskWorkerSize)
 	for i := 0; i < taskWorkerSize; i++ {
-		log.Print("Starting async task worker #", i+1)
+		log.Print("Starting async task worker #", i+1, "\n")
 		taskWorker := NewTaskWorker(i+1,TaskWorkerQueue)
 		taskWorker.Start() 
 	}
-
 	go func() {
 		for {
 			select {

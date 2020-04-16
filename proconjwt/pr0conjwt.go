@@ -18,6 +18,7 @@ func GenerateJWT(privkeyfile *rsa.PrivateKey, name string, alias string, email s
 		"aud":    "pr0con.selfmanagedmusician.com",
 		"exp":    in10m,
 		"jti":    "Unique",
+		"iat":    time.Now().Unix(), // when the token was issued/created (now)
 		"nbf":    2,
 		"sub":    "subject",
 		"scopes": "api:read.api:write",

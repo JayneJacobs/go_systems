@@ -17,7 +17,7 @@ var (
 
 const (
 	// PKPWD password for key
-	PKPWD = "HARDTOGUESS"
+	PKPWD = "******"
 	// FileStoragePath for uploads
 	FileStoragePath = "/var/www/uploads/"
 	// KeyCertPath  for key
@@ -27,19 +27,21 @@ const (
 	// PubKeyPath pubb
 	PubKeyPath = "/var/www/keycertz/mykey.pub"
 	// MongoHost is the address of the db
-	MongoHost = "127.0.0.1"
+	MongoHost = "localhost"
 	// MongoUser username string
 	MongoUser = "mongod"
 	// MongoPassword the password string
-	MongoPassword = "ThisPassword"
-	// Mongodb name of db string
+	MongoPassword = "********"
+	// MongoDb name of db string
 	MongoDb = "admin"
+	// MysqlPass password
+	MysqlPass = "********"
 )
 
 func init() {
 	f, ok, err := proconfs.ReadFile(PubKeyPath)
 	if !ok || err != nil {
-		fmt.Println(err)
+		fmt.Println("In config.go init Could not read file", err)
 	}
 	PubKeyFile, err = jwtgo.ParseRSAPublicKeyFromPEM(f)
 	if err != nil {

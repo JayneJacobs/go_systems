@@ -39,7 +39,6 @@ func ReadFile(fp string) ([]byte, bool, error) {
 	data := make([]byte, 1024)
 	for {
 		_, err := file.Read(data)
-
 		if err == io.EOF {
 			break
 		}

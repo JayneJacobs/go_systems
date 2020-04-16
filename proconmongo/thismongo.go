@@ -76,9 +76,9 @@ func CreateUser(jsonCreateuser string, ws *websocket.Conn) bool {
 	}
 	usr, pwd, err := proconutil.B64DecodeTryUser(jsonCreateuser)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Error with BB64Decode", err)
 	}
-
+    fmt.Println("Past line 81 in thismongo create user")
 	user.Email = string(usr)
 	user.Password = string(pwd)
 
@@ -86,34 +86,36 @@ func CreateUser(jsonCreateuser string, ws *websocket.Conn) bool {
 
 	//Check for a user
 	var xdoc interface{}
-	fmt.Println(string(usr), string(pwd))
+	fmt.Println("In GWS.go Create User one", string(usr), string(pwd))
+
 	filter := bson.D{{"user", user.Email}}
 	err = collection.FindOne(ctx, filter).Decode(&xdoc)
 	if err != nil {
 		fmt.Println("This is the error generated in thismongo.go by collection.FindOne", err)
 		if xdoc == nil {
-			fmt.Println("xdoc nil", xdoc)
+			fmt.Println("xdoc is  nil no message sent to Create User : ", xdoc)
 			hp := proconutil.GenerateUserPassword(user.Password)
-			fmt.Println("In in thismongo if xdoc == nil, inserted password", hp)
+			fmt.Println("In in thismongo if xdoc == nil, inserted password:", hp)
 			user.Password = hp
 			user.Role = "Generic"
-
 
 			insertResult, err := collection.InsertOne(ctx, &user)
 			if err != nil {
 				fmt.Println("Error Inserting Document with collection.InsertOne", err)
 				return false
 			}
+
 			fmt.Println("Inserted User: ", insertResult.InsertedID)
 			procondata.SendMsg("vAr", "toast-success", "user created successfully", ws)
-			procondata.SendMsg("vAr", "user-created-successfully", "user created successfully", ws)
+			procondata.SendMsg("vAr", "user-created-successfully", "User created successfully", ws)
 
 			return true
 		}
 		proconutil.SendMsg("vAr", "user-already-exists", "User Already Exists", ws)
 		return false
 	}
-	fmt.Println("In in thismongo no if statements ran")
+	proconutil.SendMsg("vAr", "user-already-exists", "User Already Exists", ws)
+	fmt.Println("In in thismongo no if statements ran for Create User; meaning the user may already exist. ")
 	return false
 }
 
@@ -139,7 +141,7 @@ func MongoGetUIComponent(component string, w http.ResponseWriter) {
 	collection := client.Database("api").Collection("ui")		
 	
 	filter := bson.D{{"component", component}}
-	
+	fmt.Println("In MongoGetUIComponent", component)
 	if err = collection.FindOne(ctx, filter).Decode(&xdoc); err != nil { fmt.Println(err) }  
 	json.NewEncoder(w).Encode(&xdoc)  
 
