@@ -55,7 +55,7 @@ func init() {
 	client, err = mongo.Connect(ctx, clientoptions)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Errror Connecting",err)
 	}
 
 	err = client.Ping(ctx, nil)
@@ -91,21 +91,21 @@ func CreateUser(jsonCreateuser string, ws *websocket.Conn) bool {
 	filter := bson.D{{"user", user.Email}}
 	err = collection.FindOne(ctx, filter).Decode(&xdoc)
 	if err != nil {
-		fmt.Println("This is the error generated in thismongo.go by collection.FindOne", err)
+		fmt.Println("This is the error generated in thismongo.go by collection.FindOne L#94", err)
 		if xdoc == nil {
 			fmt.Println("xdoc is  nil no message sent to Create User : ", xdoc)
 			hp := proconutil.GenerateUserPassword(user.Password)
-			fmt.Println("In in thismongo if xdoc == nil, inserted password:", hp)
+			fmt.Println("In in thismongo if xdoc == nil, inserted password: #L98", hp)
 			user.Password = hp
 			user.Role = "Generic"
 
 			insertResult, err := collection.InsertOne(ctx, &user)
 			if err != nil {
-				fmt.Println("Error Inserting Document with collection.InsertOne", err)
+				fmt.Println("Error Inserting Document with collection.InsertOne L#103", err)
 				return false
 			}
 
-			fmt.Println("Inserted User: ", insertResult.InsertedID)
+			fmt.Println("Inserted User:  Line 108", insertResult.InsertedID)
 			procondata.SendMsg("vAr", "toast-success", "user created successfully", ws)
 			procondata.SendMsg("vAr", "user-created-successfully", "User created successfully", ws)
 
@@ -142,7 +142,8 @@ func MongoGetUIComponent(component string, w http.ResponseWriter) {
 	
 	filter := bson.D{{"component", component}}
 	fmt.Println("In MongoGetUIComponent", component)
-	if err = collection.FindOne(ctx, filter).Decode(&xdoc); err != nil { fmt.Println(err) }  
+	err = collection.FindOne(ctx, filter).Decode(&xdoc)
+	if err != nil { fmt.Println("Error in This Mongo 145",err) }  
 	json.NewEncoder(w).Encode(&xdoc)  
-
+	
 }

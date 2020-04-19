@@ -54,6 +54,7 @@ type socketDataWinsize struct {
 
 // HandlePty takes an HTTP ResponseWriter and  a pointer to a Request
 func HandlePty(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("In HandlePty")
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -61,13 +62,13 @@ func HandlePty(w http.ResponseWriter, r *http.Request) {
 		return
 	}		
 	mws := socketDataWinsize{}
-		
+
 	err = c.ReadJSON(&mws)
 	if err != nil {
 		fmt.Println("Error reading json.", err)
 	}
 	fmt.Printf("Got Winsize: %#v\n", mws)
-	
+
 
 	wp := wsPty{}
 	// TODO: check for errors, return 500 on fail

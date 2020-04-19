@@ -41,13 +41,17 @@ type Node struct {
 // NewTree takes a root string and returns the reference to Node Struct and an error
 func NewTree(root string) (result *Node, err error) {
 	absRoot, err := filepath.Abs(root)
+	fmt.Println("In NewTree path absRoot 44: ", absRoot)
 	if err != nil {
+		fmt.Println("In NewTree path Error 46: ", err)
 		return 
 	}
 	parents := make(map[string]*Node)
-	
+	fmt.Println("In NewTree 50")
 	walkFunc := func(path string, info os.FileInfo, err error) error  {
+		fmt.Println("In walkFunc path: ", path)
 		if err != nil {
+			fmt.Println("In walkFunc first if error: ", err)
 			return err
 		}
 		parents[path] = &Node{
@@ -55,24 +59,30 @@ func NewTree(root string) (result *Node, err error) {
 			Info: 		fileInfoFromInterface(info),
 			Children: 	make([]*Node, 0),
 		}
+		fmt.Println("Return from wakFunc: ", err)
 		return nil 
 	}
 	err = filepath.Walk(absRoot, walkFunc)
 	if err != nil {
+		fmt.Println("In Filepath.Walk first if error: ", err)
 		return 
 	}
 
 	for path, node := range parents {
 		parentPath := filepath.Dir(path)
 		parent, exists := parents[parentPath]
-		if !exists {
-			result = node
+		if exists {
+			fmt.Println(" if exists")
+			node.Parent = parent
+			fmt.Println("After for loop assigned parentt: ", parent)
+			parent.Children = append(parent.Children, node)
+			return
 		}
-		node.Parent = parent
-		parent.Children = append(parent.Children, node)
+		result = node
+		fmt.Println("In for loop if !exists: ", node)
 	}
-	fmt.Println(result, err)
-   return
+	// fmt.Println(result, err)
+   return 
 }
 
 // GetFileSystemTask struct
