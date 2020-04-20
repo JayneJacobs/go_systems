@@ -17,7 +17,7 @@ var (
 
 const (
 	// PKPWD password for key
-	PKPWD = "*******"
+	PKPWD = "******"
 	// FileStoragePath for uploads
 	FileStoragePath = "/var/www/uploads/"
 	// KeyCertPath  for key
@@ -29,13 +29,13 @@ const (
 	// MongoHost is the address of the db
 	MongoHost = "localhost"
 	// MongoUser username string
-	MongoUser = "****"
+	MongoUser = "mongod"
 	// MongoPassword the password string
-	MongoPassword = "*********"
+	MongoPassword = "*******"
 	// MongoDb name of db string
-	MongoDb = "****"
+	MongoDb = "admin"
 	// MysqlPass password
-	MysqlPass = "********"
+	MysqlPass = "*******"
 )
 
 func init() {
